@@ -1,0 +1,31 @@
+#!/bin/bash
+
+echo "Bootstrapping your Fedora system..."
+
+# Ensure script stops on error
+set -e
+
+# Install packages
+sudo dnf install -y zsh git curl wget neovim tmux
+
+# Optional: install oh-my-zsh if not already
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    echo "Installing oh-my-zsh..."
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+fi
+
+if [ ! -d "$HOME/.sdkman" ] then
+    curl -s "https://get.sdkman.io" | bash
+fi
+
+if [ ! -d "$HOME/.local/share/fonts/JetBrainsMono" ] then
+    wget -P $HOME/.local/share/fonts https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/JetBrainsMono.zip
+    unzip $HOME/.local/share/fonts/JetBrainsMono.zip -d $HOME/.local/share/fonts/JetBrainsMono
+fi
+
+# Set default shell to zsh
+chsh -s "$(which zsh)"
+
+# Any other setup
+echo "All done!"
+
