@@ -26,3 +26,4 @@ vim.keymap.set("n", "<leader>fg", builtin.live_grep, { desc = "Telescope live gr
 vim.keymap.set("n", "<leader>fh", builtin.help_tags)
 vim.keymap.set("n", "<leader>fb", builtin.buffers)
 vim.keymap.set("n", "<leader>f/", builtin.current_buffer_fuzzy_find)
+vim.keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "Search keymaps" })
