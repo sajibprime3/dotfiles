@@ -39,6 +39,15 @@ return {
           auto_install = false,
         },
       })
+      local mason_registry = require("mason-registry")
+      local vue_language_server_path = mason_registry.get_package("vue-language-server"):get_install_path()
+        .. "/node_modules/@vue/language-server"
+      local vue_plugin = {
+        name = "@vue/typescript-plugin",
+        location = vue_language_server_path,
+        languages = { "vue" },
+        configNamespace = "typescript",
+      }
       local servers = {
         -- clangd = {},
         -- gopls = {},
@@ -67,7 +76,23 @@ return {
           },
         },
         jdtls = require("dark.config.lang.java.jdtls"),
+        tailwindcss = require("dark.config.lang.css.tailwindcss"),
+        vtsls = {
+
+          settings = {
+            vtsls = {
+              tsserver = {
+                globalPlugins = {
+                  vue_plugin,
+                },
+              },
+            },
+          },
+          filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
+        },
+        volar = require("dark.config.lang.vue.volar"),
       }
+
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         "stylua", -- Used to format Lua code
@@ -79,12 +104,14 @@ return {
         automatic_installation = true,
         handlers = {
           function(server_name)
-            local server = servers[server_name] or {}
+            local config = servers[server_name] or {}
             -- This handles overriding only values explicitly passed
             -- by the server configuration above. Useful when disabling
             -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-            require("lspconfig")[server_name].setup(server)
+            config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
+            require("lspconfig")[server_name].setup(config)
+            -- vim.lsp.config(server_name, config)
+            -- vim.lsp.config(server_name) -- todo maybe some day i will use the nvim v0.11+ lsp features
           end,
         },
       })
