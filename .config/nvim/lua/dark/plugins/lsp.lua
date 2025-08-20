@@ -76,6 +76,7 @@ return {
           },
         },
         jdtls = require("dark.config.lang.java.jdtls"),
+        kotlin_language_server = {},
         tailwindcss = require("dark.config.lang.css.tailwindcss"),
         vtsls = {
 

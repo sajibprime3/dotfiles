@@ -12,7 +12,24 @@ require("blink.cmp").setup({
       },
     },
   },
-  completion = { documentation = { auto_show = true } },
+  completion = {
+    documentation = {
+      auto_show = true,
+    },
+    menu = {
+      auto_show = true,
+    },
+    ghost_text = {
+      enabled = true,
+      show_with_menu = true,
+    },
+    list = {
+      selection = {
+        preselect = true,
+        auto_insert = false,
+      },
+    },
+  },
   sources = {
     default = { "lsp", "path", "snippets", "buffer" },
   },
