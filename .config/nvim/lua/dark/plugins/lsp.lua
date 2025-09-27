@@ -16,10 +16,20 @@ return {
         },
       },
       { "Bilal2453/luvit-meta", lazy = true },
-      { "williamboman/mason.nvim", branch = "v1.x" }, -- use branch v1.x untill nvim-java supports mason 2.0
-      { "williamboman/mason-lspconfig.nvim", branch = "v1.x" }, -- use branch v1.x untill nvim-java supports mason 2.0
-      "WhoIsSethDaniel/mason-tool-installer.nvim",
-
+      {
+        "mason-org/mason.nvim",
+        opts = {},
+        dependencies = {
+          "neovim/nvim-lspconfig",
+          {
+            "mason-org/mason-lspconfig.nvim",
+            "WhoIsSethDaniel/mason-tool-installer.nvim",
+          },
+        },
+        config = function()
+          require("dark.config.mason")
+        end,
+      },
       { "j-hui/fidget.nvim", opts = {} },
       { "https://git.sr.ht/~whynothugo/lsp_lines.nvim" },
 
@@ -30,92 +40,17 @@ return {
       "saghen/blink.cmp",
 
       -- Java support.
-      "nvim-java/nvim-java",
+      -- "nvim-java/nvim-java",
+
+      -- setup nvim-jdtls
+      "mfussenegger/nvim-jdtls",
     },
     config = function()
-      local capabilities = require("blink.cmp").get_lsp_capabilities()
-      require("java").setup({
-        jdk = {
-          auto_install = false,
-        },
-      })
-      local mason_registry = require("mason-registry")
-      local vue_language_server_path = mason_registry.get_package("vue-language-server"):get_install_path()
-        .. "/node_modules/@vue/language-server"
-      local vue_plugin = {
-        name = "@vue/typescript-plugin",
-        location = vue_language_server_path,
-        languages = { "vue" },
-        configNamespace = "typescript",
-      }
-      local servers = {
-        -- clangd = {},
-        -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
-        -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
-        --
-        -- Some languages (like typescript) have entire language plugins that can be useful:
-        --    https://github.com/pmizio/typescript-tools.nvim
-        --
-        -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
-        lua_ls = {
-          -- cmd = { ... },
-          -- filetypes = { ... },
-          -- capabilities = {},
-          settings = {
-            Lua = {
-              completion = {
-                callSnippet = "Replace",
-              },
-              -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-              -- diagnostics = { disable = { 'missing-fields' } },
-            },
-          },
-        },
-        jdtls = require("dark.config.lang.java.jdtls"),
-        kotlin_language_server = {},
-        tailwindcss = require("dark.config.lang.css.tailwindcss"),
-        vtsls = {
-
-          settings = {
-            vtsls = {
-              tsserver = {
-                globalPlugins = {
-                  vue_plugin,
-                },
-              },
-            },
-          },
-          filetypes = { "typescript", "javascript", "javascriptreact", "typescriptreact", "vue" },
-        },
-        volar = require("dark.config.lang.vue.volar"),
-      }
-
-      local ensure_installed = vim.tbl_keys(servers or {})
-      vim.list_extend(ensure_installed, {
-        "stylua", -- Used to format Lua code
-      })
-      require("mason").setup({})
-      require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
-      require("mason-lspconfig").setup({
-        ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
-        automatic_installation = true,
-        handlers = {
-          function(server_name)
-            local config = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
-            require("lspconfig")[server_name].setup(config)
-            -- vim.lsp.config(server_name, config)
-            -- vim.lsp.config(server_name) -- todo maybe some day i will use the nvim v0.11+ lsp features
-          end,
-        },
-      })
+      vim.lsp.config("jdtls", require("dark.config.lang.java.jdtls"))
+      vim.lsp.config("lua_ls", require("dark.config.lang.lua.lua_ls"))
+      vim.lsp.config("tailwindcss", require("dark.config.lang.css.tailwindcss")) -- tailwindcss = require("dark.config.lang.css.tailwindcss"),
+      vim.lsp.config("vtsls", require("dark.config.lang.tsjs.vtsls"))
+      vim.lsp.config("vue_ls", require("dark.config.lang.vue.volar"))
 
       local disable_semantic_tokens = {
         -- lua = true,
@@ -126,7 +61,8 @@ return {
           local bufnr = args.buf
           local client = assert(vim.lsp.get_client_by_id(args.data.client_id), "must have valid client")
 
-          local settings = servers[client.name]
+          -- local settings = servers[client.name]
+          local settings = vim.lsp._enabled_configs[client.name]
           if type(settings) ~= "table" then
             settings = {}
           end
@@ -150,8 +86,8 @@ return {
           end
 
           -- Override server capabilities
-          if settings.server_capabilities then
-            for k, v in pairs(settings.server_capabilities) do
+          if settings.resolved_config.capabilities then
+            for k, v in pairs(settings.resolved_config.capabilities) do
               if v == vim.NIL then
                 ---@diagnostic disable-next-line: cast-local-type
                 v = nil
