@@ -2,10 +2,18 @@
 
 ## Change to Your Wallpapers Directory.
 wallpapers_dir=~/Pictures/wallpapers
+cachefile=~/.cache/hypr/hyprland/scripts/wallpaper_picker
 
 mode="none"
 type="none"
 wallpaper="none"
+
+if [[ -f "$cachefile" ]]; then
+    source $cachefile
+else
+    mode="light"
+    type="scheme-tonal-spot"
+fi
 
 fzf_type_menu() {
     slt=$(echo -e "scheme-content\nscheme-expressive\nscheme-fidelity\nscheme-fruit-salad\nscheme-monochrome\nscheme-neutral\nscheme-rainbow\nscheme-tonal-spot" | fzf)
@@ -41,7 +49,14 @@ fzf_menu() {
 
 fzf_menu
 
-# FIX: crash if didn't select all three every instance.
 matugen -m $mode -t $type image $wallpaper
-# A delay is needed for Matugen to compile and use Hooks. You need increase [or decrease] this delay if needed.
-sleep 0.7
+
+if [[ ! -f "$cachefile" ]]; then
+    mkdir -p $(dirname $cachefile)
+fi
+echo "mode=$mode" >"$cachefile"
+echo "type=$type" >>"$cachefile"
+echo "wallpaper=$wallpaper" >>"$cachefile"
+
+# A delay is needed for Matugen to compile and use Hooks. You may increase [or decrease] this delay if needed.
+sleep 0.5
