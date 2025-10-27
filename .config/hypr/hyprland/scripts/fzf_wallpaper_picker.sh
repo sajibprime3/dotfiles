@@ -6,57 +6,40 @@ wallpapers_dir=~/Pictures/wallpapers
 mode="none"
 type="none"
 wallpaper="none"
-menu="fzf"
 
 fzf_type_menu() {
     slt=$(echo -e "scheme-content\nscheme-expressive\nscheme-fidelity\nscheme-fruit-salad\nscheme-monochrome\nscheme-neutral\nscheme-rainbow\nscheme-tonal-spot" | fzf)
-    [[ -z "$slt" ]] && menu="fzf" && return
+    [[ -z "$slt" ]] && fzf_menu && return
     type=$slt
-    menu="fzf"
+    fzf_menu
 }
 fzf_mode_menu() {
     slm=$(echo -e "dark\nlight" | fzf)
-    [[ -z "$slm" ]] && menu="fzf" && return
+    [[ -z "$slm" ]] && fzf_menu && return
     mode=$slm
-    menu="fzf"
+    fzf_menu
 }
 fzf_menu() {
     sl=$( (
         echo -e "Change Mode\nChange Type"
         ls $wallpapers_dir
     ) | fzf --prompt="Select Wallpaper > ")
-    [[ -z "$sl" ]] && menu="none" && return
+    [[ -z "$sl" ]] && return
     case "$sl" in
     "Change Mode")
-        menu="mode"
+        fzf_mode_menu
         ;;
     "Change Type")
-        menu="type"
+        fzf_type_menu
         ;;
     *)
         wallpaper="$wallpapers_dir/$sl"
+        fzf_menu
         ;;
     esac
 }
-while true; do
-    case "$menu" in
-    "fzf")
-        fzf_menu
-        ;;
-    "mode")
-        fzf_mode_menu
-        ;;
-    "type")
-        fzf_type_menu
-        ;;
-    "none")
-        break
-        ;;
-    *)
-        echo "Something went wrong!"
-        ;;
-    esac
-done
+
+fzf_menu
 
 # FIX: crash if didn't select all three every instance.
 matugen -m $mode -t $type image $wallpaper
