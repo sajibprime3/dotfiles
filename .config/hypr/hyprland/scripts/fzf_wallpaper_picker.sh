@@ -73,14 +73,14 @@ remove_mark() {
     echo "$unmarked"
 }
 fzf_type_menu() {
-    slt=$(type_options | fzf)
+    slt=$(type_options | fzf --layout=reverse --highlight-line --cycle --scroll-off=4 --keep-right --footer="Enter to select. Esc to go back." --footer-border=bottom)
     [[ -z "$slt" ]] && fzf_main_menu && return
     slt=$(remove_mark "$slt")
     staged_type=$slt
     fzf_main_menu
 }
 fzf_mode_menu() {
-    slm=$(mode_options | fzf)
+    slm=$(mode_options | fzf --layout=reverse --highlight-line --cycle --scroll-off=4 --keep-right --footer="Enter to select. Esc to go back." --footer-border=bottom)
     [[ -z "$slm" ]] && fzf_main_menu && return
     slm=$(remove_mark "$slm")
     staged_mode=$slm
@@ -99,7 +99,7 @@ save_and_exit() {
     echo "wallpaper=$wallpaper" >>"$cachefile"
 }
 fzf_main_menu() {
-    sl=$(main_options | fzf --prompt="Select Wallpaper > ")
+    sl=$(main_options | fzf --layout=reverse --highlight-line --cycle --scroll-off=4 --keep-right --footer="Enter to select. Esc to save and exit." --footer-border=bottom --footer-label="  $([[ -n $staged_mode ]] && echo $staged_mode || echo $mode) |  $([[ -n $staged_wallpaper ]] && echo $staged_wallpaper || echo $wallpaper) |  $([[ -n $staged_type ]] && echo $staged_type || echo $type) ")
     [[ -z "$sl" ]] && save_and_exit && return
     sl=$(remove_mark "$sl")
     case "$sl" in
