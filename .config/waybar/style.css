@@ -1,3 +1,5 @@
+@import "colors.css";
+
 * {
   /* `otf-font-awesome` is required to be installed for icons */
   font-family: "SF Pro Display", 'JetBrainsMono Nerd Font Mono';
@@ -68,7 +70,7 @@ button:hover {
 
 #workspaces button.focused,
 #workspaces button.active {
-  background-color: rgba(210, 170, 150, 0.8);
+  background-color: @primary;
   padding: 0 15px;
 }
 
