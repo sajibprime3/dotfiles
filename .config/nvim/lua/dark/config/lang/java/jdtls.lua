@@ -9,10 +9,35 @@ local shared_config_path = vim.fn.glob("$MASON/share/jdtls/config")
 local configuration = vim.fn.stdpath("cache") .. "/jdtls/config"
 local data = vim.fn.stdpath("cache") .. "/jdtls/workspace/" .. project_name
 
-print(launcher)
+local get_plugins = function(pattern)
+  return vim.split(vim.fn.glob(pattern, true), "\n")
+end
+local java_debug_bundle =
+  get_plugins("$MASON/packages/java-debug-adapter/extension/server/com.microsoft.java.debug.plugin-*.jar")
+local java_test_bundle = get_plugins("$MASON/packages/java-test/extension/server/*.jar")
+
+local bundle_builder = require("dark.util.bundle").builder
+bundle_builder:add_plugin(java_debug_bundle):add_plugin(java_test_bundle)
+
+-- stylua: ignore
+vim.api.nvim_create_autocmd("LspAttach", {
+  callback = function(args)
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    if client ~= nil and client.name == "jdtls" then
+      local bufnr = args.buf
+      vim.keymap.set("n", "<leader>tt", function() require("jdtls").test_class() end, { desc = "Run test current buffer" })
+      vim.keymap.set("n", "<leader>tr", function() require("jdtls").test_nearest_method() end, { desc = "Run Nearest test method"})
+    end
+  end,
+})
 
 return {
+  init_options = {
+    bundles = bundle_builder.get_plugin(),
+  },
   cmd = {
+    -- Passing Args with Java(executable) is easier and cleaner.
+    -- You can directly call Jdtls too, see below.
     "java", -- Required Minimum Java version 21.
     "-Declipse.application=org.eclipse.jdt.ls.core.id1",
     "-Dosgi.bundles.defaultStartLevel=4",
@@ -45,7 +70,7 @@ return {
     -- Use the workspace_folder defined above to store data for this project
     "-data",
     data,
-    --
+    -- Jdtls directly.
     -- "jdtls",
     -- "-configuration",
     -- configuration,
@@ -75,7 +100,7 @@ return {
       -- Enable method signature help
       signatureHelp = {
         enabled = true,
-        -- description = { enabled = true },
+        description = { enabled = true },
       },
       -- Use the fernflower decompiler when using the javap command to decompile byte code back to java code
       contentProvider = {
