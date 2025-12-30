@@ -31,13 +31,20 @@ return {
         end,
       },
       { "j-hui/fidget.nvim", opts = {} },
-      { "https://git.sr.ht/~whynothugo/lsp_lines.nvim" },
 
       -- Autoformatting
       "stevearc/conform.nvim",
 
       -- Completion
       "saghen/blink.cmp",
+
+      -- Lightbulb for code action.
+      { "kosayoda/nvim-lightbulb" },
+      -- Usage symbol like Jetbrains Idea.
+      {
+        "Wansmer/symbol-usage.nvim",
+        event = "LspAttach", -- need run before LspAttach if you use nvim 0.9. On 0.10 use 'LspAttach'
+      },
 
       -- Java support.
       -- "nvim-java/nvim-java",
@@ -48,7 +55,7 @@ return {
     config = function()
       vim.lsp.config("jdtls", require("dark.config.lang.java.jdtls"))
       vim.lsp.config("lua_ls", require("dark.config.lang.lua.lua_ls"))
-      vim.lsp.config("tailwindcss", require("dark.config.lang.css.tailwindcss")) -- tailwindcss = require("dark.config.lang.css.tailwindcss"),
+      vim.lsp.config("tailwindcss", require("dark.config.lang.css.tailwindcss"))
       vim.lsp.config("vtsls", require("dark.config.lang.tsjs.vtsls"))
       vim.lsp.config("vue_ls", require("dark.config.lang.vue.volar"))
 
@@ -76,9 +83,10 @@ return {
           vim.keymap.set("n", "gT", vim.lsp.buf.type_definition, { buffer = 0 })
           vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer = 0 })
 
-          vim.keymap.set("n", "<space>cr", vim.lsp.buf.rename, { buffer = 0 })
-          vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, { buffer = 0 })
-          vim.keymap.set("n", "<space>wd", builtin.lsp_document_symbols, { buffer = 0 })
+          vim.keymap.set("n", "<leader>c", "", { desc = "Code" })
+          vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, { buffer = 0, desc = "Rename" })
+          vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = 0, desc = "Code Action" })
+          vim.keymap.set("n", "<leader>wd", builtin.lsp_document_symbols, { buffer = 0 })
 
           local filetype = vim.bo[bufnr].filetype
           if disable_semantic_tokens[filetype] then
@@ -101,17 +109,10 @@ return {
 
       require("dark.autoformat").setup()
 
-      require("lsp_lines").setup()
-      vim.diagnostic.config({ virtual_text = true, virtual_lines = false })
-
-      vim.keymap.set("", "<leader>l", function()
-        local config = vim.diagnostic.config() or {}
-        if config.virtual_text then
-          vim.diagnostic.config({ virtual_text = false, virtual_lines = true })
-        else
-          vim.diagnostic.config({ virtual_text = true, virtual_lines = false })
-        end
-      end, { desc = "Toggle lsp_lines" })
+      require("dark.config.usage-symbols")
+      require("nvim-lightbulb").setup({
+        autocmd = { enabled = true },
+      })
     end,
   },
 }
