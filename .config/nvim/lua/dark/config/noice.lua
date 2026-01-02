@@ -1,4 +1,8 @@
 require("noice").setup({
+  cmdline = {
+    enabled = true,
+    view = "cmdline", -- cmdline_popup || cmdline
+  },
   lsp = {
     override = {
       ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
