@@ -1,13 +1,23 @@
 
-export PATH="$HOME/bin:$HOME/.local/bin:$PATH"
-
 # Add a directory to PATH if it's not already in PATH
 add_to_path_once() {
-    case ":$PATH:" in
-        *":$1:"*) ;; # already present
-        *) PATH="$1:$PATH" ;;
-    esac
+    local dir="$1"
+
+    # Basic validation: ensure an argument is provided and it's a directory
+    if [[ -z "$dir" ]]; then
+        return
+    fi
+    if [[ ! -d "$dir" ]]; then
+        return
+    fi
+
+    # Check if the directory is already in PATH (using colon delimiters to avoid partial matches)
+    if [[ ":$PATH:" != *":$dir:"* ]]; then
+        export PATH="$PATH:$dir"
+    fi
 }
+
+add_to_path_once "$HOME/.local/bin"
 
 # Local user-specific software directory
 local_opt="$HOME/opt"
@@ -17,20 +27,25 @@ if [ -d "$local_opt" ] && find "$local_opt" -mindepth 1 -maxdepth 1 -type d | gr
     for app_dir in "$local_opt"/*; do
         [ -d "$app_dir" ] || continue
 
-        # Add app root if it contains executables
-        if find "$app_dir" -maxdepth 1 -type f -perm -u=x | grep -q .; then
-            add_to_path_once "$app_dir"
+        if [[ -L "$app_dir/current" ]]; then
+            resolved_path="$app_dir/$(readlink $app_dir/current)"
+        else
+            resolved_path="$app_dir"
         fi
 
-        # Add all bin/ directories under the app directory
-        while IFS= read -r -d '' bin_dir; do
-            add_to_path_once "$bin_dir"
-        done < <(find "$app_dir" -mindepth 1 -maxdepth 1 -type d -name bin -print0)
+        # Add resolved app root if it contains executables
+        if find "$resolved_path" -maxdepth 1 -type f -perm -u=x | grep -q .; then
+            add_to_path_once "$resolved_path"
+        fi
+
+        # Add bin directory under the resolved_path directory
+        if [[ -e "$resolved_path/bin" && -d "$resolved_path/bin" ]]; then
+            add_to_path_once "$resolved_path/bin"
+        fi
     done
 fi
 
 unset app_dir
-
 
 unset local_opt
 
