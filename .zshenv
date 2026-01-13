@@ -19,11 +19,11 @@ add_to_path_once() {
 add_to_path_once "$HOME/.local/bin"
 
 # Local user-specific software directory
-local_opt="$HOME/opt"
+LOCAL_OPT="$HOME/opt"
 
-# Add executables from local_opt/* and any bin directories under them
-if [ -d "$local_opt" ] && find "$local_opt" -mindepth 1 -maxdepth 1 -type d | grep -q .; then
-    for app_dir in "$local_opt"/*; do
+# Add executables from LOCAL_OPT/* and any bin directories under them
+if [ -d "$LOCAL_OPT" ] && find "$LOCAL_OPT" -mindepth 1 -maxdepth 1 -type d | grep -q .; then
+    for app_dir in "$LOCAL_OPT"/*; do
         [ -d "$app_dir" ] || continue
 
         if [[ -L "$app_dir/current" ]]; then
@@ -52,8 +52,7 @@ fi
 
 unset app_dir
 
-unset local_opt
-
+export LOCAL_OPT
 export PATH
 
 # Automatically set JAVA_HOME for current JDK installed by SDKMAN if found.
