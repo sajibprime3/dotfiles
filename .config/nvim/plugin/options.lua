@@ -35,6 +35,7 @@ opt.expandtab = true
 opt.more = false
 
 opt.foldmethod = "manual"
+opt.clipboard = "unnamedplus"
 
 opt.title = true
 opt.titlestring = '%t%( %M%)%( (%{expand("%:~:h")})%)%a (nvim)'
