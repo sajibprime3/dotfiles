@@ -21,8 +21,9 @@ else
     type="scheme-tonal-spot"
 fi
 change_wallpaper() {
-    # You May edit this to set your wallpaper. I will use Matugen and swww(hooked via matugen).
-    matugen -m "$mode" -t "$type" image "$wallpapers_dir/$wallpaper"
+    # You May edit this to set your wallpaper. I will use Matugen and awww(hooked via matugen).
+    # Todo: options to select --prefer
+    matugen -m "$mode" -t "$type" image "$wallpapers_dir/$wallpaper" --prefer darkness
 }
 main_options() {
     echo " 0. Change Mode"
